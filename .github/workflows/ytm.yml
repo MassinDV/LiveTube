@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Configure git
+      # Configure Git
       - name: Configure Git
         run: |
           git config --global user.email "action@github.com"
@@ -27,11 +27,10 @@ jobs:
           sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
           sudo chmod a+rx /usr/local/bin/yt-dlp
 
-      # Download cookies file (pre-exported from browser)
-      - name: Download cookies file
+      # Create cookies.txt file from GitHub Secret
+      - name: Create cookies file
         run: |
-          curl -o cookies.txt <URL_TO_YOUR_COOKIES_FILE>
-          # Replace <URL_TO_YOUR_COOKIES_FILE> with a secure storage location (e.g., GitHub Secrets or external storage).
+          echo "${{ secrets.YOUTUBE_COOKIES }}" > cookies.txt
 
       # Generate ma1.m3u8 file
       - name: Generate ma1.m3u8

@@ -5,10 +5,6 @@ on:
     # Run every 3 hours
     - cron: '0 */3 * * *'
 
-  pull_request:
-    branches:
-      - main
-
   workflow_dispatch:
 
 jobs:
@@ -31,13 +27,19 @@ jobs:
           sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
           sudo chmod a+rx /usr/local/bin/yt-dlp
 
+      # Download cookies file (pre-exported from browser)
+      - name: Download cookies file
+        run: |
+          curl -o cookies.txt <URL_TO_YOUR_COOKIES_FILE>
+          # Replace <URL_TO_YOUR_COOKIES_FILE> with a secure storage location (e.g., GitHub Secrets or external storage).
+
       # Generate ma1.m3u8 file
       - name: Generate ma1.m3u8
         run: |
           echo "#EXTM3U" > ma1.m3u8
           echo "#EXT-X-VERSION:3" >> ma1.m3u8
           echo "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000" >> ma1.m3u8
-          yt-dlp --print urls https://www.youtube.com/channel/UC1X2nRRWPptr88W_N9RWS1g/live >> ma1.m3u8
+          yt-dlp --cookies cookies.txt --print urls https://www.youtube.com/channel/UC1X2nRRWPptr88W_N9RWS1g/live >> ma1.m3u8
 
       # Generate Dw.m3u8 file
       - name: Generate Dw.m3u8
@@ -45,7 +47,7 @@ jobs:
           echo "#EXTM3U" > Dw.m3u8
           echo "#EXT-X-VERSION:3" >> Dw.m3u8
           echo "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000" >> Dw.m3u8
-          yt-dlp --print urls https://www.youtube.com/channel/UC30ditU5JI16o5NbFsHde_Q/live >> Dw.m3u8
+          yt-dlp --cookies cookies.txt --print urls https://www.youtube.com/channel/UC30ditU5JI16o5NbFsHde_Q/live >> Dw.m3u8
 
       # Stage changes
       - name: Stage changes

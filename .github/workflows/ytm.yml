@@ -1,7 +1,9 @@
 name: Get YouTube Live m3u8
+
 on:
   schedule:
-    - cron: '0 0/3 * * *'
+    # Run every 3 hours
+    - cron: '0 */3 * * *'
 
   pull_request:
     branches:
@@ -10,45 +12,49 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  update-links:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: config
-      run: |
-        git config --global user.email "action@github.com"
-        git config --global user.name "GitHub Action"
-    - name: Install yt-dlp
-      run: |
-        sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-        sudo chmod a+rx /usr/local/bin/yt-dlp
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Get ma1.m3u8
-      run: |
-        touch ./ma1.m3u8
-        sudo cat >./ma1.m3u8 <<EOL
-        #EXTM3U
-        #EXT-X-VERSION:3
-        #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000
-        $(yt-dlp --print urls https://www.youtube.com/channel/UC1X2nRRWPptr88W_N9RWS1g/live)
-        EOL
+      # Configure git
+      - name: Configure Git
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
 
-    - name: Get Dw.m3u8
-      run: |
-        touch ./Dw.m3u8
-        sudo cat >./Dw.m3u8 <<EOL
-        #EXTM3U
-        #EXT-X-VERSION:3
-        #EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000
-        $(yt-dlp --print urls https://www.youtube.com/channel/UC30ditU5JI16o5NbFsHde_Q/live)
-        EOL
+      # Install yt-dlp
+      - name: Install yt-dlp
+        run: |
+          sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+          sudo chmod a+rx /usr/local/bin/yt-dlp
 
-    - name: git add
-      run: |
-        git add -A
-        ls -la
+      # Generate ma1.m3u8 file
+      - name: Generate ma1.m3u8
+        run: |
+          echo "#EXTM3U" > ma1.m3u8
+          echo "#EXT-X-VERSION:3" >> ma1.m3u8
+          echo "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000" >> ma1.m3u8
+          yt-dlp --print urls https://www.youtube.com/channel/UC1X2nRRWPptr88W_N9RWS1g/live >> ma1.m3u8
 
-    - name: commit & push
-      run: |
-        git commit -m "links are updated"
-        git push
+      # Generate Dw.m3u8 file
+      - name: Generate Dw.m3u8
+        run: |
+          echo "#EXTM3U" > Dw.m3u8
+          echo "#EXT-X-VERSION:3" >> Dw.m3u8
+          echo "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000" >> Dw.m3u8
+          yt-dlp --print urls https://www.youtube.com/channel/UC30ditU5JI16o5NbFsHde_Q/live >> Dw.m3u8
+
+      # Stage changes
+      - name: Stage changes
+        run: |
+          git add -A
+          ls -la
+
+      # Commit and push changes
+      - name: Commit and push changes
+        run: |
+          git commit -m "Updated m3u8 links"
+          git push

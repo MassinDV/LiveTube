@@ -13,10 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
     - uses: actions/checkout@v3
 
-    # Configure Git user for commits
     - name: Configure Git
       run: |
         git config --global user.email "action@github.com"
@@ -25,15 +23,29 @@ jobs:
     # Install yt-dlp
     - name: Install yt-dlp
       run: |
-        # Using package manager to install yt-dlp (if available)
         sudo apt update
         sudo apt install -y yt-dlp || {
-          # If yt-dlp is not available, fall back to curl
           curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
           sudo chmod a+rx /usr/local/bin/yt-dlp
         }
 
-  # Get tvbenguturk.m3u8
+    # Authenticate yt-dlp with Google (OAuth2)
+    - name: Authenticate yt-dlp
+      run: |
+        # Set up the OAuth2 credentials and authenticate
+        mkdir -p ~/.config/yt-dlp
+        echo "${{ secrets.YOUTUBE_OAUTH_CREDENTIALS }}" > ~/.config/yt-dlp/credentials.json
+
+    # Get kemalsunalfilmlerivesahneleri.m3u8
+    - name: Get kemalsunalfilmlerivesahneleri.m3u8
+      run: |
+        touch ./kemalsunalfilmlerivesahneleri.m3u8
+        echo "#EXTM3U" > ./kemalsunalfilmlerivesahneleri.m3u8
+        echo "#EXT-X-VERSION:3" >> ./kemalsunalfilmlerivesahneleri.m3u8
+        echo "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000" >> ./kemalsunalfilmlerivesahneleri.m3u8
+        yt-dlp --print urls https://www.youtube.com/@KemalSunalFilmleriveSahneleri/live >> ./kemalsunalfilmlerivesahneleri.m3u8
+
+    # Get tvbenguturk.m3u8
     - name: Get tvbenguturk.m3u8
       run: |
         touch ./tvbenguturk.m3u8
@@ -42,13 +54,11 @@ jobs:
         echo "#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=2560000" >> ./tvbenguturk.m3u8
         yt-dlp --print urls https://www.youtube.com/@tvbenguturk/live >> ./tvbenguturk.m3u8
 
-    # Add changes to git
     - name: Git add changes
       run: |
         git add -A
         ls -la
 
-    # Commit and push the changes
     - name: Commit & Push
       run: |
         git commit -m "Links are updated"
